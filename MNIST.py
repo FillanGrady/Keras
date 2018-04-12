@@ -32,6 +32,7 @@ if __name__ == "__main__":
     model.add(keras.layers.Dropout(0.5))
     model.add(keras.layers.Dense(10, activation='softmax'))
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-    model.fit(X_train, Y_train, batch_size=32, nb_epoch=5, verbose=1)
+    model.fit(X_train, Y_train, batch_size=32, nb_epoch=1, verbose=1)
     score = model.evaluate(X_test, Y_test, verbose=0)
     print(score)
+    print(model.metrics_names)
