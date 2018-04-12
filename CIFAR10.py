@@ -1,6 +1,7 @@
 import keras
 import keras.preprocessing.image
 import time
+import argparse
 
 
 def compare(image, predict, correct):
@@ -29,8 +30,11 @@ def get_data():
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-epochs', '-e', help="Number of epochs of training", type=int, default=50)
+    args = parser.parse_args()
     data_augmentation = True
-    epochs = 50
+    epochs = args.epochs
     batch_size = 32
     X_train, Y_train, X_test, Y_test = get_data()
     start = time.time()
