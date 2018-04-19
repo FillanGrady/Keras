@@ -1,7 +1,6 @@
 import keras
 import pandas
 import matplotlib
-import matplotlib.pyplot as plt
 import numpy as np
 import argparse
 import os
@@ -68,6 +67,9 @@ if __name__ == '__main__':
     parser.add_argument('-load', '-o', help="Load location", type=str, default=None)
     parser.add_argument('-savefig', '-f', help="Save figure?", action="store_true")
     args = parser.parse_args()
+    if args.savefig:
+        matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
     train, test = load_file()
     trainX, trainY = create_dataset(dataset=train, look_back=args.look_back)
     testX, testY = create_dataset(dataset=test, look_back=args.look_back)
