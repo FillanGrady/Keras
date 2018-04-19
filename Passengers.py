@@ -90,7 +90,6 @@ if __name__ == '__main__':
     plt.plot(np.array(range(train.size, train.size + test.size)), testPredict)
     plt.plot(np.array(range(train.size, train.size + test.size)), test)
     if args.savefig:
-        matplotlib.use('Agg')
         plt.savefig("Passengers.png")
     else:
         plt.show()
