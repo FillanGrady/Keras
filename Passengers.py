@@ -4,6 +4,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import argparse
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Hide messy TensorFlow warnings
 
 
 def load_file(file_path = r'/home/fillan/Datasets/international-airline-passengers.csv'):
@@ -16,9 +18,9 @@ def load_file(file_path = r'/home/fillan/Datasets/international-airline-passenge
 
 def create_dataset(dataset, look_back=1):
     Y = dataset[look_back:]
-    X = np.zeros((np.size(dataset) - look_back, 1, look_back))
+    X = np.zeros((np.size(dataset) - look_back, look_back, 1))
     for i in range(np.size(dataset) - look_back):
-        X[i, :, :] = dataset[i:i + look_back].reshape(1, look_back)
+        X[i, :, :] = dataset[i:i + look_back].reshape(look_back, 1)
     return X, Y
 
 
@@ -45,10 +47,17 @@ def predict(model, initial_sequence, num_iterations):
     output = []
     for i in range(num_iterations):
         o = model.predict(initial_sequence)[0][0]
-        initial_sequence = np.roll(initial_sequence, shift=1, axis=2)
-        initial_sequence[0, 0, -1] = o
+        initial_sequence = np.roll(initial_sequence, shift=-1, axis=1)
+        initial_sequence[0, -1, 0] = o
         output.append(o)
     return np.array(output)
+
+
+def pretty_print(arr):
+    line = ""
+    for i in range(arr.shape[1]):
+        line += "%.2f" % arr[0][i][0] + " "
+    print(line)
 
 
 if __name__ == '__main__':
@@ -65,9 +74,12 @@ if __name__ == '__main__':
     model = None
     if args.load is None:
         model = keras.Sequential()
-        model.add(keras.layers.LSTM(units=4, input_shape=(1, args.look_back)))
+        model.add(keras.layers.LSTM(units=50, input_shape=(args.look_back, 1), return_sequences=True))
+        model.add(keras.layers.Dropout(0.2))
+        model.add(keras.layers.LSTM(units=100, return_sequences=False))
+        model.add(keras.layers.Dropout(0.2))
         model.add(keras.layers.Dense(units=1))
-        model.compile(loss='mean_squared_error', optimizer='adam')
+        model.compile(loss='mean_squared_error', optimizer='rmsprop')
         model.fit(trainX, trainY, batch_size=1, epochs=args.epochs, verbose=2)
     else:
         model = load_model(args.load)
