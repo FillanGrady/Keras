@@ -83,10 +83,10 @@ if __name__ == '__main__':
         model.fit(trainX, trainY, batch_size=1, epochs=args.epochs, verbose=2)
     else:
         model = load_model(args.load)
-    testPredict = predict(model, initial_sequence=trainX[-1:, :, :], num_iterations=testY.size)
-    plt.plot(trainY)
-    plt.plot(np.array(range(train.size, train.size + test.size - args.look_back)), testPredict)
-    plt.plot(np.array(range(train.size, train.size + test.size - args.look_back)), testY)
+    testPredict = predict(model, initial_sequence=trainX[-1:, :, :], num_iterations=testY.size+args.look_back)
+    plt.plot(train)
+    plt.plot(np.array(range(train.size, train.size + test.size)), testPredict)
+    plt.plot(np.array(range(train.size, train.size + test.size)), test)
     if args.savefig:
         matplotlib.use('Agg')
         plt.savefig("Passengers.png")
