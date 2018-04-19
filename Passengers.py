@@ -1,7 +1,6 @@
 import keras
 import pandas
 import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import argparse
@@ -42,12 +41,23 @@ def load_model(file_name='Passengers'):
     return loaded_model
 
 
+def predict(model, initial_sequence, num_iterations):
+    output = []
+    for i in range(num_iterations):
+        o = model.predict(initial_sequence)[0][0]
+        initial_sequence = np.roll(initial_sequence, shift=1, axis=2)
+        initial_sequence[0, 0, -1] = o
+        output.append(o)
+    return np.array(output)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-epochs', '-e', help="Number of epochs of training", type=int, default=100)
-    parser.add_argument('-look_back', '-l', help="Number of periods to look back on", type=int, default=5)
+    parser.add_argument('-epochs', '-e', help="Number of epochs of training", type=int, default=10)
+    parser.add_argument('-look_back', '-l', help="Number of periods to look back on", type=int, default=1)
     parser.add_argument('-save', '-s', help="Save location", type=str, default=None)
     parser.add_argument('-load', '-o', help="Load location", type=str, default=None)
+    parser.add_argument('-savefig', '-f', help="Save figure?", action="store_true")
     args = parser.parse_args()
     train, test = load_file()
     trainX, trainY = create_dataset(dataset=train, look_back=args.look_back)
@@ -61,10 +71,13 @@ if __name__ == '__main__':
         model.fit(trainX, trainY, batch_size=1, epochs=args.epochs, verbose=2)
     else:
         model = load_model(args.load)
-    testPredict = model.predict(testX)
+    testPredict = predict(model, initial_sequence=trainX[-1:, :, :], num_iterations=testY.size)
     plt.plot(trainY)
     plt.plot(np.array(range(train.size, train.size + test.size - args.look_back)), testPredict)
     plt.plot(np.array(range(train.size, train.size + test.size - args.look_back)), testY)
-    plt.savefig("Passengers.png")
+    if args.savefig:
+        plt.savefig("Passengers.png")
+    else:
+        plt.show()
     if args.save is not None:
         save_model(model, file_name=args.save)
