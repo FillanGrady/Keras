@@ -27,19 +27,37 @@ def load_model(file_name='Predictor'):
     return loaded_model
 
 
-def create_dataset(dataset, look_back=1):
-    datset_as_list = list(dataset)
-    temp = np.zeros(shape=(128, len(datset_as_list)))
-    for i, c in enumerate(datset_as_list):
+def list2vec(list):
+    temp = np.zeros(shape=(len(list), 128))
+    for i, c in enumerate(list):
         num_form = ord(c)
         if num_form < 128:
-            temp[num_form, i] = 1
+            temp[i, num_form] = 1
         else:
-            temp[32, i] = 1  # This is equal to " "
-    return np.array(temp[:, :-look_back]), np.array(temp[:, look_back:])
+            temp[i, 32] = 1  # This is equal to " "
+    return np.array(temp)
 
-def create_output(model, starting_character="S", periods=1):
 
+def create_dataset(dataset, look_back=1):
+    datset_as_vec = list2vec(list(dataset))
+    Y = datset_as_vec[look_back:, :]
+    X = np.zeros((np.shape(datset_as_vec)[0] - look_back, look_back, 128))
+    for i in range(np.shape(X)[0]):
+        X[i, :, :] = datset_as_vec[i:i + look_back, :].reshape(look_back, 128)
+    return X, Y
+
+
+def create_output(model, look_back, total_periods_left=1):
+    sequence = list2vec(" " * look_back)
+    output = []
+    while total_periods_left > 0:
+        o = model.predict(sequence)[0][0]
+        output.append(o)
+        if o == ".":
+            total_periods_left -= 1
+        initial_sequence = np.roll(sequence, shift=-1, axis=1)
+        initial_sequence[0, -1, 0] = o
+    return str(output)
 
 
 if __name__ == '__main__':
@@ -51,10 +69,10 @@ if __name__ == '__main__':
     parser.add_argument('-periods', '-p', help="Number of periods in output file", type=int, default=1)
     args = parser.parse_args()
     text = load_file()
-    X, Y = create_dataset(text)
+    X, Y = create_dataset(text, args.look_back)
     if args.load is None:
         model = keras.Sequential()
-        model.add(keras.layers.LSTM(units=20, input_shape=(1, 1)))
+        model.add(keras.layers.LSTM(units=20, input_shape=(args.look_back, 128)))
         model.add(keras.layers.Dense(units=1))
         model.compile(loss='mean_squared_error', optimizer='adam')
         model.fit(X, Y, batch_size=1, epochs=args.epochs, verbose=2)
