@@ -70,12 +70,13 @@ if __name__ == '__main__':
     args = parser.parse_args()
     text = load_file()
     X, Y = create_dataset(text, args.look_back)
+    print("Finished converting dataset")
     if args.load is None:
         model = keras.Sequential()
         model.add(keras.layers.LSTM(units=20, input_shape=(args.look_back, 128)))
         model.add(keras.layers.Dense(units=128))
         model.compile(loss='mean_squared_error', optimizer='adam')
-        model.fit(X, Y, batch_size=1, epochs=args.epochs, verbose=2)
+        model.fit(X, Y, batch_size=1, epochs=args.epochs, verbose=1)
     else:
         model = load_model(args.load)
     if args.save is not None:
