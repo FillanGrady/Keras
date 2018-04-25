@@ -73,10 +73,11 @@ if __name__ == '__main__':
     if args.load is None:
         model = keras.Sequential()
         model.add(keras.layers.LSTM(units=20, input_shape=(args.look_back, 128)))
-        model.add(keras.layers.Dense(units=1))
+        model.add(keras.layers.Dense(units=128))
         model.compile(loss='mean_squared_error', optimizer='adam')
         model.fit(X, Y, batch_size=1, epochs=args.epochs, verbose=2)
     else:
         model = load_model(args.load)
     if args.save is not None:
         save_model(model, file_name=args.save)
+    print(create_output(model, look_back=args.look_back, total_periods_left=1))
