@@ -38,6 +38,14 @@ def list2vec(list):
     return np.array(temp)
 
 
+def vec2str(vector):
+    s = vector.argmax(axis=1)
+    output = ""
+    for i in range(np.size(s)):
+        output += chr(s[i])
+    return output
+
+
 def create_dataset(dataset, look_back=1):
     datset_as_vec = list2vec(list(dataset))
     Y = datset_as_vec[look_back:, :]
@@ -48,32 +56,37 @@ def create_dataset(dataset, look_back=1):
 
 
 def create_output(model, look_back, total_periods_left=1):
-    sequence = list2vec(" " * look_back)
-    output = []
+    sequence = list2vec(("hello " * 10)[:look_back]).reshape(1, 10, 128)
+    output_list = []
     while total_periods_left > 0:
-        o = model.predict(sequence)[0][0]
-        output.append(o)
-        if o == ".":
+        raw_output = model.predict(sequence)[0]
+        maxed_output = np.zeros(128, dtype=np.bool)
+        maxed_output[raw_output.argmax()] = True
+        output_list.append(maxed_output)
+        if maxed_output[46] is True:
             total_periods_left -= 1
-        initial_sequence = np.roll(sequence, shift=-1, axis=1)
-        initial_sequence[0, -1, 0] = o
-    return str(output)
+        total_periods_left -= 1
+        sequence = np.roll(sequence, shift=-1, axis=1)
+        sequence[0, -1, :] = maxed_output
+    return vec2str(np.array(output_list))
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument("-file", "-f", help="File to load", type=str, default=r'/home/fillan/Datasets/JoelPapers.txt')
     parser.add_argument('-epochs', '-e', help="Number of epochs of training", type=int, default=100)
     parser.add_argument('-look_back', '-l', help="Number of periods to look back on", type=int, default=5)
     parser.add_argument('-save', '-s', help="Save location", type=str, default=None)
     parser.add_argument('-load', '-o', help="Load location", type=str, default=None)
     parser.add_argument('-periods', '-p', help="Number of periods in output file", type=int, default=1)
     args = parser.parse_args()
-    text = load_file()
+    text = load_file(args.file)
     X, Y = create_dataset(text, args.look_back)
     print("Finished converting dataset")
     if args.load is None:
         model = keras.Sequential()
-        model.add(keras.layers.LSTM(units=20, input_shape=(args.look_back, 128)))
+        model.add(keras.layers.LSTM(units=50, input_shape=(args.look_back, 128)))
+        model.add(keras.layers.Dropout(0.2))
         model.add(keras.layers.Dense(units=128))
         model.compile(loss='mean_squared_error', optimizer='adam')
         model.fit(X, Y, batch_size=1, epochs=args.epochs, verbose=1)
@@ -81,4 +94,4 @@ if __name__ == '__main__':
         model = load_model(args.load)
     if args.save is not None:
         save_model(model, file_name=args.save)
-    print(create_output(model, look_back=args.look_back, total_periods_left=1))
+    print(create_output(model, look_back=args.look_back, total_periods_left=10))
