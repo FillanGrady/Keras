@@ -56,7 +56,7 @@ def create_dataset(dataset, look_back=1):
 
 
 def create_output(model, look_back, total_periods_left=1):
-    sequence = list2vec(("hello " * 10)[:look_back]).reshape(1, 10, 128)
+    sequence = list2vec(("hello " * 10)[:look_back]).reshape(1, look_back, 128)
     output_list = []
     while total_periods_left > 0:
         raw_output = model.predict(sequence)[0]
