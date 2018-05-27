@@ -65,7 +65,6 @@ def create_output(model, look_back, total_periods_left=1):
         output_list.append(maxed_output)
         if maxed_output[46] is True:
             total_periods_left -= 1
-        total_periods_left -= 1
         sequence = np.roll(sequence, shift=-1, axis=1)
         sequence[0, -1, :] = maxed_output
     return vec2str(np.array(output_list))
@@ -94,4 +93,4 @@ if __name__ == '__main__':
         model = load_model(args.load)
     if args.save is not None:
         save_model(model, file_name=args.save)
-    print(create_output(model, look_back=args.look_back, total_periods_left=10))
+    print(create_output(model, look_back=args.look_back, total_periods_left=3))
