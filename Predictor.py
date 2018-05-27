@@ -65,6 +65,7 @@ def create_output(model, look_back, total_periods_left=1):
         output_list.append(maxed_output)
         if maxed_output[46] is True:
             total_periods_left -= 1
+        total_periods_left -= 1
         sequence = np.roll(sequence, shift=-1, axis=1)
         sequence[0, -1, :] = maxed_output
     return vec2str(np.array(output_list))
@@ -86,6 +87,8 @@ if __name__ == '__main__':
         model = keras.Sequential()
         model.add(keras.layers.LSTM(units=50, input_shape=(args.look_back, 128)))
         model.add(keras.layers.Dropout(0.2))
+        model.add(keras.layers.LSTM(units=100))
+        model.add(keras.layers.Dropout(0.2))
         model.add(keras.layers.Dense(units=128))
         model.compile(loss='mean_squared_error', optimizer='adam')
         model.fit(X, Y, batch_size=1, epochs=args.epochs, verbose=1)
@@ -93,4 +96,4 @@ if __name__ == '__main__':
         model = load_model(args.load)
     if args.save is not None:
         save_model(model, file_name=args.save)
-    print(create_output(model, look_back=args.look_back, total_periods_left=3))
+    print(create_output(model, look_back=args.look_back, total_periods_left=100))
