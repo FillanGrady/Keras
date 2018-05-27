@@ -87,7 +87,7 @@ if __name__ == '__main__':
         model = keras.Sequential()
         model.add(keras.layers.LSTM(units=50, input_shape=(args.look_back, 128)))
         model.add(keras.layers.Dropout(0.2))
-        model.add(keras.layers.LSTM(units=100))
+        model.add(keras.layers.Dense(units=100))
         model.add(keras.layers.Dropout(0.2))
         model.add(keras.layers.Dense(units=128))
         model.compile(loss='mean_squared_error', optimizer='adam')
