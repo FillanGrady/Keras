@@ -14,6 +14,6 @@ if __name__ == "__main__":
     model = Predictor.load_model(args.load)
     model.compile(loss='mean_squared_error', optimizer='adam')
     metrics = model.evaluate(X, Y)
-    with open(args.log, 'w+') as f:
+    with open(args.log, 'a') as f:
         f.write(os.linesep + "Test Set" + os.linesep)
         f.write(str(metrics))
