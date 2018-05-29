@@ -97,7 +97,8 @@ if __name__ == '__main__':
         if args.log is not None:
             with open(args.log, 'w') as f:
                 f.write("Training Set" + os.linesep)
-                f.write(history.history)
+                for key in history.history:
+                    f.write(str(key) + "\t" + str(history.history[key]) + os.linesep)
     else:
         model = load_model(args.load)
     if args.save is not None:
