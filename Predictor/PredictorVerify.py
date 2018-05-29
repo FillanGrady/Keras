@@ -12,6 +12,7 @@ if __name__ == "__main__":
     text = Predictor.load_file(args.file)
     X, Y = Predictor.create_dataset(text, args.look_back)
     model = Predictor.load_model(args.load)
+    model.compile(loss='mean_squared_error', optimizer='adam')
     metrics = model.evaluate(X, Y)
     with open(args.log, 'w+') as f:
         f.write(os.linesep + "Test Set" + os.linesep)
