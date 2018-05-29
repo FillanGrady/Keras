@@ -88,10 +88,12 @@ if __name__ == '__main__':
     print("Finished converting dataset")
     if args.load is None:
         model = keras.Sequential()
-        model.add(keras.layers.LSTM(units=50, input_shape=(args.look_back, 128))) #underfitting, add layers
-        model.add(keras.layers.Dropout(0.2))
+        model.add(keras.layers.LSTM(units=50, input_shape=(args.look_back, 128), return_sequences=True))
+        model.add(keras.layers.Dropout(0.1))
+        model.add(keras.layers.LSTM(units=50, return_sequences=True))
+        model.add(keras.layers.Dropout(0.1))
         model.add(keras.layers.Dense(units=100))
-        model.add(keras.layers.Dropout(0.2))
+        model.add(keras.layers.Dropout(0.1))
         model.add(keras.layers.Dense(units=128))
         model.compile(loss='mean_squared_error', optimizer='adam')
         history = model.fit(X, Y, batch_size=1, epochs=args.epochs, verbose=1)
@@ -99,7 +101,7 @@ if __name__ == '__main__':
             with open(args.log, 'w') as f:
                 f.write("Training Set" + os.linesep)
                 for key in history.history:
-                    f.write(str(key) + "\t" + str(history.history[key]) + os.linesep)
+                    f.write(str(key) + os.linesep + str(history.history[key]) + os.linesep)
     else:
         model = load_model(args.load)
     if args.save is not None:
