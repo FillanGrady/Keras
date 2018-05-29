@@ -16,4 +16,4 @@ if __name__ == "__main__":
     metrics = model.evaluate(X, Y)
     with open(args.log, 'w+') as f:
         f.write(os.linesep + "Test Set" + os.linesep)
-        f.write(metrics)
+        f.write(str(metrics))
