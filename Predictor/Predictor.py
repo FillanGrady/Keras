@@ -56,8 +56,8 @@ def create_dataset(dataset, look_back=1):
     return X, Y
 
 
-def create_output(model, look_back, total_periods_left=1):
-    sequence = list2vec(("hello " * 10)[:look_back]).reshape(1, look_back, 128)
+def create_output(model, initial_sequence, look_back, total_periods_left=1):
+    sequence = list2vec(initial_sequence[len(initial_sequence) - look_back:]).reshape(1, look_back, 128)
     output_list = []
     while total_periods_left > 0:
         raw_output = model.predict(sequence)[0]
@@ -81,13 +81,14 @@ if __name__ == '__main__':
     parser.add_argument('-load', '-o', help="Load location", type=str, default=None)
     parser.add_argument('-periods', '-p', help="Number of periods in output file", type=int, default=1)
     parser.add_argument('-log', help='Log save location', type=str, default=None)
+    parser.add_argument('-initial', '-i', help='Initial sentence to continue from', type=str, default='hello '*10)
     args = parser.parse_args()
     text = load_file(args.file)
     X, Y = create_dataset(text, args.look_back)
     print("Finished converting dataset")
     if args.load is None:
         model = keras.Sequential()
-        model.add(keras.layers.LSTM(units=50, input_shape=(args.look_back, 128)))
+        model.add(keras.layers.LSTM(units=50, input_shape=(args.look_back, 128))) #underfitting, add layers
         model.add(keras.layers.Dropout(0.2))
         model.add(keras.layers.Dense(units=100))
         model.add(keras.layers.Dropout(0.2))
@@ -103,4 +104,4 @@ if __name__ == '__main__':
         model = load_model(args.load)
     if args.save is not None:
         save_model(model, file_name=args.save)
-    print(create_output(model, look_back=args.look_back, total_periods_left=100))
+    print(create_output(model, initial_sequence=args.initial, look_back=args.look_back, total_periods_left=100))
