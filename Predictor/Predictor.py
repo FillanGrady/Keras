@@ -1,6 +1,7 @@
 import keras
 import numpy as np
 import argparse
+import os
 
 
 def load_file(file_path=r'/home/fillan/Datasets/JoelPapers.txt'):
@@ -79,6 +80,7 @@ if __name__ == '__main__':
     parser.add_argument('-save', '-s', help="Save location", type=str, default=None)
     parser.add_argument('-load', '-o', help="Load location", type=str, default=None)
     parser.add_argument('-periods', '-p', help="Number of periods in output file", type=int, default=1)
+    parser.add_argument('-log', help='Log save location', type=str, default=None)
     args = parser.parse_args()
     text = load_file(args.file)
     X, Y = create_dataset(text, args.look_back)
@@ -91,7 +93,11 @@ if __name__ == '__main__':
         model.add(keras.layers.Dropout(0.2))
         model.add(keras.layers.Dense(units=128))
         model.compile(loss='mean_squared_error', optimizer='adam')
-        model.fit(X, Y, batch_size=1, epochs=args.epochs, verbose=1)
+        history = model.fit(X, Y, batch_size=1, epochs=args.epochs, verbose=1)
+        if args.log is not None:
+            with open(args.log, 'w') as f:
+                f.write("Training Set" + os.linesep)
+                f.write(history.history)
     else:
         model = load_model(args.load)
     if args.save is not None:
